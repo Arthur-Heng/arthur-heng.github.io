@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Not All Teacher Help Is Help</title>
+<meta name="author" content="Heng Wang">
+<meta name="description" content="A big teacher's help fails most often exactly where a small agent needs it. Learning only from the takeovers that worked is worth 10 to 21 points.">
+<meta property="og:title" content="Not All Teacher Help Is Help">
+<meta property="og:description" content="A big teacher's help fails most often exactly where a small agent needs it. Learning only from the takeovers that worked is worth 10 to 21 points.">
+<meta property="og:type" content="article">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎺</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;0,8..60,700;1,8..60,400&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  color-scheme: light;
+  --bg: #fbfaf7;
+  --surface: #ffffff;
+  --ink: #16150f;
+  --ink-2: #55534b;
+  --ink-3: #85837a;
+  --rule: #e4e1d8;
+  --accent: #2a78d6;
+  --accent-soft: #e8f0fb;
+  --warn: #eb6834;
+  --neutral: #b9b6ab;
+  --serif: "Source Serif 4", "Iowan Old Style", "Palatino Linotype", Georgia, serif;
+  --sans: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+    --bg: #151514;
+    --surface: #1d1d1b;
+    --ink: #f0efec;
+    --ink-2: #c3c2b7;
+    --ink-3: #8f8d84;
+    --rule: #33322e;
+    --accent: #3987e5;
+    --accent-soft: #1b2a40;
+    --warn: #d95926;
+    --neutral: #6b6961;
+  }
+}
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--serif);
+  font-size: 19px;
+  line-height: 1.62;
+}
+main, header.top, footer { max-width: 720px; margin: 0 auto; padding: 0 20px; }
+header.top { padding-top: 28px; font-family: var(--sans); font-size: 14px; }
+header.top a { color: var(--ink-2); text-decoration: none; }
+header.top a:hover { color: var(--accent); }
+h1 {
+  font-size: clamp(38px, 7vw, 58px);
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+  margin: 56px 0 18px;
+  font-weight: 700;
+  text-wrap: balance;
+}
+.dek { font-size: 23px; line-height: 1.4; color: var(--ink-2); margin: 0 0 22px; text-wrap: pretty; }
+.byline { font-family: var(--sans); font-size: 14px; color: var(--ink-3); margin-bottom: 40px; }
+.byline a { color: var(--ink-2); }
+h2 {
+  font-size: 30px; line-height: 1.2; letter-spacing: -0.01em;
+  margin: 64px 0 14px; font-weight: 700; text-wrap: balance;
+}
+h2 .num {
+  display: block; font-family: var(--sans); font-size: 13px; font-weight: 600;
+  letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent); margin-bottom: 8px;
+}
+h3 { font-size: 21px; margin: 36px 0 8px; }
+p { margin: 0 0 20px; text-wrap: pretty; }
+a { color: var(--accent); text-underline-offset: 3px; }
+ul, ol { padding-left: 24px; margin: 0 0 20px; }
+li { margin-bottom: 8px; }
+strong { font-weight: 600; }
+
+.stats {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 0;
+  border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule);
+  margin: 36px 0 44px;
+}
+.stat { padding: 20px 16px 18px 0; }
+.stat + .stat { padding-left: 16px; border-left: 1px solid var(--rule); }
+.stat b { display: block; font-size: 36px; line-height: 1; font-weight: 700; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
+.stat span { display: block; font-family: var(--sans); font-size: 13px; line-height: 1.4; color: var(--ink-2); margin-top: 8px; }
+@media (max-width: 600px) {
+  body { font-size: 18px; }
+  .stats { grid-template-columns: repeat(2, 1fr); }
+  .stat:nth-child(3) { padding-left: 0; border-left: 0; }
+  .stat:nth-child(n+3) { border-top: 1px solid var(--rule); }
+}
+
+.pull {
+  font-size: 26px; line-height: 1.3; font-weight: 600; letter-spacing: -0.01em;
+  border-left: 3px solid var(--accent); padding: 4px 0 4px 20px; margin: 36px 0; text-wrap: balance;
+}
+
+figure { margin: 32px 0 36px; }
+.card {
+  background: var(--surface); border: 1px solid var(--rule); border-radius: 10px;
+  padding: 20px 20px 14px; position: relative;
+}
+.card h4 { font-family: var(--sans); font-size: 15px; font-weight: 600; margin: 0 0 2px; }
+.card .sub { font-family: var(--sans); font-size: 13px; color: var(--ink-2); margin: 0 0 12px; }
+figcaption { font-family: var(--sans); font-size: 13px; line-height: 1.5; color: var(--ink-3); margin-top: 10px; }
+svg { display: block; width: 100%; height: auto; overflow: visible; }
+svg text { font-family: var(--sans); fill: var(--ink-2); }
+svg .lab { fill: var(--ink); }
+svg .val { fill: var(--ink); font-weight: 600; font-variant-numeric: tabular-nums; }
+svg .hdr { fill: var(--ink-3); font-weight: 600; letter-spacing: 0.06em; }
+svg .grid { stroke: var(--rule); stroke-width: 1; }
+svg .axis { stroke: var(--ink-3); stroke-width: 1; }
+svg .b-neutral { fill: var(--neutral); }
+svg .b-accent { fill: var(--accent); }
+svg .b-warn { fill: var(--warn); }
+svg .hit { fill: transparent; cursor: default; }
+svg .mk { fill: var(--ink); stroke: var(--surface); stroke-width: 2; }
+svg .mk-open { fill: var(--surface); stroke: var(--ink); stroke-width: 2; }
+svg .ln { stroke: var(--ink-2); stroke-width: 2; fill: none; }
+svg .whisk { stroke: var(--ink-3); stroke-width: 1.5; }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 18px; font-family: var(--sans); font-size: 13px; color: var(--ink-2); margin: 0 0 10px; }
+.legend i { display: inline-block; width: 11px; height: 11px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; }
+.legend svg { display: inline-block; width: 26px; height: 12px; margin-right: 6px; vertical-align: -1px; }
+.duo { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.duo .ptitle { font-family: var(--sans); font-size: 13px; font-weight: 600; color: var(--ink-2); margin: 0 0 4px; }
+@media (max-width: 600px) { .duo { grid-template-columns: 1fr; gap: 20px; } }
+#tip {
+  position: fixed; pointer-events: none; z-index: 10; display: none;
+  background: var(--ink); color: var(--bg); font-family: var(--sans); font-size: 12.5px; line-height: 1.45;
+  padding: 7px 10px; border-radius: 6px; max-width: 260px;
+}
+#tip b { font-weight: 600; }
+
+.grid2x2 { font-family: var(--sans); font-size: 14px; border-collapse: separate; border-spacing: 6px; width: 100%; margin: 4px 0; }
+.grid2x2 th { font-weight: 500; color: var(--ink-2); text-align: center; padding: 4px 6px; font-size: 13px; }
+.grid2x2 th.row { text-align: right; white-space: nowrap; }
+.grid2x2 td { text-align: center; padding: 16px 8px; border-radius: 8px; background: var(--bg); border: 1px solid var(--rule); }
+.grid2x2 td b { display: block; font-size: 20px; }
+.grid2x2 td span { font-size: 12.5px; color: var(--ink-2); }
+.grid2x2 td.on { background: var(--accent-soft); border-color: var(--accent); }
+
+.tbl-wrap { overflow-x: auto; margin: 24px 0 28px; }
+table.data { border-collapse: collapse; width: 100%; font-family: var(--sans); font-size: 14.5px; }
+table.data th, table.data td { text-align: left; padding: 9px 12px 9px 0; border-bottom: 1px solid var(--rule); }
+table.data th { font-weight: 600; color: var(--ink-2); font-size: 13px; }
+table.data td.n, table.data th.n { text-align: right; font-variant-numeric: tabular-nums; padding-right: 0; padding-left: 12px; }
+table.data tr.hi td { font-weight: 600; }
+details { font-family: var(--sans); font-size: 13px; color: var(--ink-2); margin-top: 10px; }
+details summary { cursor: pointer; }
+details table.data { font-size: 13px; margin-top: 8px; }
+
+.note {
+  background: var(--surface); border: 1px solid var(--rule); border-radius: 10px;
+  padding: 18px 20px; font-size: 17px; margin: 28px 0;
+}
+.note p:last-child { margin-bottom: 0; }
+hr { border: 0; border-top: 1px solid var(--rule); margin: 56px 0; }
+footer { font-family: var(--sans); font-size: 13px; color: var(--ink-3); padding-top: 8px; padding-bottom: 64px; }
+footer a { color: var(--ink-2); }
+</style>
+</head>
+<body>
+<header class="top"><a href="/">&larr; Heng Wang</a></header>
+
+<main>
+<article>
+
+<h1>Not All Teacher Help Is Help</h1>
+<p class="dek">A big model's help fails most often exactly where a small agent needs it. Learning only from the help that worked is worth 10 to 21 points, and it changes what reinforcement learning can do afterwards.</p>
+<div class="byline">Heng Wang &middot; November 12, 2026 &middot; work in progress</div>
+
+<p>Imagine a tutor who is brilliant on the problems you could already solve and wrong on most of the ones you are stuck on. You would still learn from that tutor, but not by copying everything they write down.</p>
+
+<p>That is roughly the position of a small language-model agent learning from a big one. We let a 1.7B student play, had a 32B teacher take over from the places the student reached, and checked each takeover against the environment. Three out of four takeovers failed the task. Where the student was actually stuck, more than five out of six failed.</p>
+
+<div class="stats">
+  <div class="stat"><b>77%</b><span>of teacher takeovers fail the task, in both environments</span></div>
+  <div class="stat"><b>13%</b><span>teacher success where the student is stuck, against 82% where it is not</span></div>
+  <div class="stat"><b>+10 to 21</b><span>points from learning only the successful takeovers</span></div>
+  <div class="stat"><b>91.2</b><span>ALFWorld success when RL starts from the verified student. RL alone: 61.4</span></div>
+</div>
+
+<h2>The recipe everyone uses</h2>
+
+<p>What should a small agent take from a big teacher? The common recipe lets the student play and has the teacher take over from states the student reached. DAgger, <a href="https://arxiv.org/abs/2512.14895">OEC</a>, <a href="https://arxiv.org/abs/2609.36246">OLIVE</a> and many on-policy distillation methods work this way. The appeal is clear: the teacher's guidance lands on the student's own mistakes instead of on states the student will never visit.</p>
+
+<p>The recipe quietly assumes the teacher's help is good help. Published work disagrees on whether that needs checking:</p>
+<ul>
+  <li>OEC and <a href="https://arxiv.org/abs/2607.27937">OVCSD</a> keep only takeovers that the environment confirms as successful.</li>
+  <li><a href="https://arxiv.org/abs/2607.04574">A Few Teacher Steps</a> finds that a few unchecked teacher steps work just as well.</li>
+</ul>
+<p>Both can't be the general rule. So we measured it: how much of the teacher's help is worth learning, where the useful part sits, and when sorting it matters.</p>
+
+<h2>One batch of help, used four ways</h2>
+
+<p>A Qwen3-1.7B student learns from a Qwen3-32B teacher in ALFWorld (household tasks, 274 test tasks) and WebShop (shopping, 500 test instructions). Collection is simple:</p>
+<ol>
+  <li>The student plays training tasks, and we sample one state per task.</li>
+  <li>We probe each state with 16 student continuations. If none succeeds, the student is <em>stuck</em> there.</li>
+  <li>The teacher takes over once from each state.</li>
+  <li>A fresh student is fine-tuned on the teacher's turns.</li>
+</ol>
+<p>The same takeovers are then sliced four ways. Because every slice comes from one collection, the cost of gathering the help is the same in every comparison.</p>
+
+<figure>
+  <div class="card">
+    <table class="grid2x2" aria-label="The four training sets">
+      <tr><th></th><th>All takeovers</th><th>Successful takeovers only</th></tr>
+      <tr><th class="row">All states</th><td><b>C1</b><span>copy everything</span></td><td class="on"><b>C2</b><span>check the outcome</span></td></tr>
+      <tr><th class="row">Stuck states only</th><td><b>C3</b><span>help where needed</span></td><td class="on"><b>C4</b><span>both filters</span></td></tr>
+    </table>
+  </div>
+  <figcaption>Columns ask whether the help worked. Rows ask whether the student needed it. All numbers below are success rates in percent over three training seeds, with paired bootstrap 95% intervals over test tasks.</figcaption>
+</figure>
+
+<h2><span class="num">Finding 1</span>Only the teacher's successes are worth learning</h2>
+
+<p>About three-quarters of the teacher's takeovers fail the task: 77% in both environments. A student trained on the successful quarter beats a student trained on everything, on roughly a quarter of the data.</p>
+
+<figure>
+  <div class="card">
+    <h4>Student success after training on each slice</h4>
+    <p class="sub">Percent of test tasks solved, mean of three seeds</p>
+    <div class="legend"><span><i style="background:var(--neutral)"></i>All takeovers</span><span><i style="background:var(--accent)"></i>Successful takeovers only</span></div>
+    <div id="chart-f1"></div>
+  </div>
+  <figcaption>Keeping only successes adds 9.9 points in ALFWorld [7.0, 12.8] and 19.8 in WebShop [16.9, 22.8]. At stuck states the gains are 14.3 and 21.2.</figcaption>
+</figure>
+
+<p>The rows of the table matter much less than the columns. Restricting takeovers to stuck states adds 4.4 points in ALFWorld and 1.5 in WebShop, and only when the outcome check is already on. Without it, C3 and C1 are indistinguishable.</p>
+
+<p>Can something cheaper than running every takeover to its end do the same job? We tried two shortcuts, and neither closes the gap:</p>
+<ul>
+  <li><strong>Truncation.</strong> Keeping the first five teacher turns of every takeover, unchecked, stays 8.5 to 23.6 points below verification.</li>
+  <li><strong>Format filtering.</strong> Dropping only takeovers with malformed actions stays 13.1 to 21.4 points below (ALFWorld).</li>
+</ul>
+<p>The bad help is not obviously bad. It is well-formed, confident, and starts out plausibly. You find out it was wrong when the task doesn't get done.</p>
+
+<h2><span class="num">Finding 2</span>The teacher is weakest where the student is stuck</h2>
+
+<p>If the failures were spread evenly, this would be a story about noise. They are not. The teacher succeeds where the student could have managed alone, and mostly fails where the student is stuck.</p>
+
+<figure>
+  <div class="card">
+    <h4>Teacher takeover success, by whether the student needed help</h4>
+    <p class="sub">Percent of takeovers that complete the task</p>
+    <div class="legend"><span><i style="background:var(--neutral)"></i>Student can finish on its own</span><span><i style="background:var(--warn)"></i>Student is stuck</span></div>
+    <div id="chart-f2"></div>
+  </div>
+  <figcaption>ALFWorld: 47 of 57 against 42 of 332. WebShop: 38 of 64 against 54 of 333.</figcaption>
+</figure>
+
+<p class="pull">Student need and teacher reliability pull in opposite directions.</p>
+
+<p>Two checks explain why:</p>
+<ul>
+  <li><strong>These are not dead ends.</strong> A scripted expert solves 88% of the stuck ALFWorld states where the teacher failed. The task was still winnable when the teacher took over.</li>
+  <li><strong>These are tasks the teacher also finds hard.</strong> Playing from the very start, the teacher fails 53% of the tasks behind stuck states, against 7% of the tasks behind other states.</li>
+</ul>
+
+<p>So the student and the teacher share a notion of difficulty. The student gets stuck on hard tasks, and hard tasks are where the teacher is least reliable. <a href="https://arxiv.org/abs/2606.15912">Guided-OPD</a> reports a related effect for teacher scoring under distribution shift. Here the cause is task difficulty that both models share, and it is measured on what the teacher actually does, not on how it scores.</p>
+
+<p>This is why targeting help at stuck states is not enough by itself. Asking for help "where it is needed" selects exactly the states where the help is worst. Targeting pays only after verification has removed the failures.</p>
+
+<h2><span class="num">Finding 3</span>The weaker the teacher, the more checking pays</h2>
+
+<p>We changed the teacher and repeated the comparison in ALFWorld. Within each takeover protocol, a less reliable teacher makes verification worth more:</p>
+<ul>
+  <li><strong>Teacher plays 10 turns, then hands back.</strong> A 14B teacher (16% takeover success) gains 28.7 points from verification. The 32B teacher (22%) gains 9.9.</li>
+  <li><strong>Teacher plays to the end.</strong> The 32B teacher (28%) gains 18.1. The same teacher given the expert's plan (64%) gains 3.9.</li>
+</ul>
+
+<figure>
+  <div class="card">
+    <h4>Gain from keeping only successful takeovers, against how often the teacher succeeds</h4>
+    <p class="sub">ALFWorld, four teacher settings. Points gained by the student; bars are 95% intervals</p>
+    <div class="legend">
+      <span><svg viewBox="0 0 26 12"><line x1="0" y1="6" x2="26" y2="6" class="ln"/><circle cx="13" cy="6" r="4.5" class="mk"/></svg>Teacher plays 10 turns, then hands back</span>
+      <span><svg viewBox="0 0 26 12"><line x1="0" y1="6" x2="26" y2="6" class="ln" stroke-dasharray="4 3"/><rect x="8.5" y="1.5" width="9" height="9" class="mk-open"/></svg>Teacher plays to the end</span>
+    </div>
+    <div class="duo">
+      <div><p class="ptitle">All sampled states</p><div id="chart-f3a"></div></div>
+      <div><p class="ptitle">Stuck states only</p><div id="chart-f3b"></div></div>
+    </div>
+    <details><summary>Show the numbers</summary>
+      <table class="data">
+        <tr><th>Teacher</th><th>Protocol</th><th class="n">Takeover success, all / stuck</th><th class="n">Gain, all states</th><th class="n">Gain, stuck states</th></tr>
+        <tr><td>Qwen3-14B</td><td>hand-back</td><td class="n">16.2 / 7.9</td><td class="n">+28.7 [24.1, 33.2]</td><td class="n">+16.2 [11.6, 20.8]</td></tr>
+        <tr><td>Qwen3-32B</td><td>hand-back</td><td class="n">22.2 / 12.2</td><td class="n">+9.9 [7.1, 12.6]</td><td class="n">+14.3 [10.9, 17.5]</td></tr>
+        <tr><td>Qwen3-32B</td><td>to the end</td><td class="n">28.1 / 21.3</td><td class="n">+18.1 [14.5, 21.7]</td><td class="n">+12.1 [8.8, 15.6]</td></tr>
+        <tr><td>Qwen3-32B + expert plan</td><td>to the end</td><td class="n">64.4 / 60.7</td><td class="n">+3.9 [2.1, 5.7]</td><td class="n">+3.8 [2.0, 5.8]</td></tr>
+      </table>
+    </details>
+  </div>
+  <figcaption>Compare points joined by a line: same protocol, different teacher. The two protocols are not comparable with each other, because playing to the end changes what a takeover contains.</figcaption>
+</figure>
+
+<p>This may be what reconciles the two camps. With the reliable teacher, five unchecked teacher turns do as well as verified takeovers. With the plain teacher they do not (Finding 1). A Few Teacher Steps used a teacher trained with RL on the environment itself, which is the regime where checking adds little. Both camps can be right about their own teacher.</p>
+
+<p>Verification also makes the choice of teacher matter less. A student trained on verified 14B takeovers is statistically level with one trained on verified 32B takeovers (&minus;2.7 points [&minus;7.7, +2.4]). A weaker teacher succeeds less often, but its successes teach about as well.</p>
+
+<h2>What it buys</h2>
+
+<p>In ALFWorld, verified takeovers beat the standard ways of using a teacher, and they give RL a much better start. RL here is GiGPO with its official recipe, run to a common step budget.</p>
+
+<figure>
+  <div class="card">
+    <h4>ALFWorld success by training method</h4>
+    <p class="sub">Percent of 274 test tasks solved</p>
+    <div class="legend"><span><i style="background:var(--neutral)"></i>Baselines</span><span><i style="background:var(--accent)"></i>Built on verified takeovers at stuck states (C4)</span></div>
+    <div id="chart-buy"></div>
+  </div>
+  <figcaption>Three training seeds per row, except behavior cloning followed by RL, which has one seed so far.</figcaption>
+</figure>
+
+<ul>
+  <li><strong>The student passes its teacher.</strong> On unseen tasks C4 reaches 64.0, against 53.0 for the 32B teacher playing alone with thinking on. A model nineteen times smaller ends up ahead of the model it learned from, because it learned only from the teacher's good days.</li>
+  <li><strong>RL ends about 30 points higher.</strong> C4 followed by RL beats RL alone by 29.8 points [25.2, 34.7], at lower compute.</li>
+  <li><strong>The data matters, not just the warm start.</strong> Starting RL from C4 beats starting it from behavior cloning by 10.3 points [6.6, 14.1] (one seed, preliminary).</li>
+</ul>
+
+<h3>WebShop is the contrast case</h3>
+
+<p>WebShop episodes are short, and RL finds successes without help. There the picture is different:</p>
+<ul>
+  <li><strong>Against behavior cloning.</strong> Verified takeovers are worth about the same per example as teacher demonstrations. Takeovers at stuck states are more data-efficient when data is small: 52.3 against 44.7 at 259 examples. The gap closes by about 2,500 examples.</li>
+  <li><strong>Against RL.</strong> C4 followed by RL ties RL alone at about 70 but gets there sooner: 61.3 against 11.2 at a quarter of RL's compute (equal-compute numbers are from one seed).</li>
+</ul>
+
+<div class="note">
+  <p><strong>The pattern across the two environments:</strong> teacher help raises the ceiling where RL explores poorly, and buys speed where RL can explore without it.</p>
+</div>
+
+<h2>Limits and what is next</h2>
+
+<p>This is a draft with numbers as of November 12. The recipe is not new: it belongs to the DAgger and OEC family. The contribution is the controlled comparison and the account of when teacher help is worth learning.</p>
+<ul>
+  <li><strong>Scope.</strong> Two environments, one student size, one model family. A third environment, TextCraft, was limited by action-format errors and supports no conclusion.</li>
+  <li><strong>Baselines.</strong> On-policy distillation is represented by a vanilla implementation only. Stronger variants such as <a href="https://arxiv.org/abs/2604.24005">TCOD</a> and <a href="https://arxiv.org/abs/2609.40285">PivotOPD</a> are not reproduced yet.</li>
+  <li><strong>Cost.</strong> Probing for stuck states does not save compute, and fine-tuning on agent data costs general ability. The mean over four general benchmarks falls from 75.4 to 21.3 (one seed). Mixing in replay data restores it to 64.0 with no loss in ALFWorld.</li>
+  <li><strong>Still running.</strong> RL started from unfiltered takeovers will show whether verification still matters once RL follows. A second seed is running for behavior cloning followed by RL, and the last seeds for WebShop RL.</li>
+</ul>
+
+<p>If you take one thing from this: before asking how to get more help from a bigger model, check how much of the help you already have was right. In our setting the answer was a quarter, and the wrong three-quarters sat exactly where the student was looking for guidance.</p>
+
+</article>
+</main>
+
+<hr>
+<footer>
+  <a href="/">Heng Wang</a> &middot; University of Illinois Urbana-Champaign &middot; Comments and corrections welcome by <a href="mailto:hengwang0301@gmail.com">email</a>.
+</footer>
+
+<div id="tip"></div>
+
+<script>
+(function () {
+  var NS = 'http://www.w3.org/2000/svg';
+  var tip = document.getElementById('tip');
+  function el(name, attrs, parent, text) {
+    var e = document.createElementNS(NS, name);
+    for (var k in attrs) e.setAttribute(k, attrs[k]);
+    if (text != null) e.textContent = text;
+    if (parent) parent.appendChild(e);
+    return e;
+  }
+  function hover(node, html) {
+    node.addEventListener('pointermove', function (ev) {
+      tip.innerHTML = html;
+      tip.style.display = 'block';
+      var w = tip.offsetWidth, h = tip.offsetHeight;
+      var x = Math.min(window.innerWidth - w - 8, Math.max(8, ev.clientX + 14));
+      var y = ev.clientY - h - 12; if (y < 8) y = ev.clientY + 18;
+      tip.style.left = x + 'px'; tip.style.top = y + 'px';
+    });
+    node.addEventListener('pointerleave', function () { tip.style.display = 'none'; });
+  }
+  // Horizontal bar with a square baseline end and a 4px rounded data end.
+  function barPath(x, y, w, h) {
+    var r = Math.min(4, w, h / 2);
+    return 'M' + x + ',' + y + 'h' + (w - r) + 'a' + r + ',' + r + ' 0 0 1 ' + r + ',' + r +
+      'v' + (h - 2 * r) + 'a' + r + ',' + r + ' 0 0 1 ' + (-r) + ',' + r + 'h' + (-(w - r)) + 'z';
+  }
+  function hbars(id, rows, opt) {
+    var W = 680, labW = opt.labW || 250, right = 56, barH = 20, gap = 10, hdrH = 30;
+    var plotW = W - labW - right, y = 4, max = opt.max || 100;
+    var H = 4; rows.forEach(function (r) { H += r.header ? hdrH : barH + gap; }); H += 22;
+    var svg = el('svg', { viewBox: '0 0 ' + W + ' ' + H, role: 'img', 'aria-label': opt.label });
+    var ticks = opt.ticks || [0, 25, 50, 75, 100];
+    ticks.forEach(function (t) {
+      var x = labW + plotW * t / max;
+      el('line', { x1: x, x2: x, y1: 0, y2: H - 20, 'class': t === 0 ? 'axis' : 'grid' }, svg);
+      el('text', { x: x, y: H - 4, 'text-anchor': 'middle', 'font-size': 12 }, svg, t + (opt.unit || ''));
+    });
+    rows.forEach(function (r) {
+      if (r.header) {
+        el('text', { x: 0, y: y + 19, 'font-size': 12, 'class': 'hdr' }, svg, r.header.toUpperCase());
+        y += hdrH; return;
+      }
+      var w = Math.max(2, plotW * r.v / max);
+      el('text', { x: labW - 12, y: y + barH / 2 + 4.5, 'text-anchor': 'end', 'font-size': 13.5, 'class': 'lab' }, svg, r.label);
+      el('path', { d: barPath(labW, y, w, barH), 'class': 'b-' + r.c }, svg);
+      el('text', { x: labW + w + 7, y: y + barH / 2 + 4.5, 'font-size': 13.5, 'class': 'val' }, svg, r.v.toFixed(opt.dec == null ? 1 : opt.dec) + (opt.unit || ''));
+      var hit = el('rect', { x: 0, y: y - gap / 2, width: W, height: barH + gap, 'class': 'hit' }, svg);
+      hover(hit, '<b>' + r.label + '</b><br>' + r.tip);
+      y += barH + gap;
+    });
+    document.getElementById(id).appendChild(svg);
+  }
+
+  hbars('chart-f1', [
+    { header: 'ALFWorld' },
+    { label: 'C1  all states, all takeovers', v: 50.2, c: 'neutral', tip: '50.2% [45.6, 54.7]' },
+    { label: 'C2  all states, successes only', v: 60.1, c: 'accent', tip: '60.1% [56.0, 64.1]' },
+    { label: 'C3  stuck states, all takeovers', v: 50.1, c: 'neutral', tip: '50.1% [45.7, 54.5]' },
+    { label: 'C4  stuck states, successes only', v: 64.5, c: 'accent', tip: '64.5% [60.2, 68.1]' },
+    { header: 'WebShop' },
+    { label: 'C1  all states, all takeovers', v: 24.0, c: 'neutral', tip: '24.0% [21.0, 27.1]' },
+    { label: 'C2  all states, successes only', v: 43.8, c: 'accent', tip: '43.8% [40.3, 47.2]' },
+    { label: 'C3  stuck states, all takeovers', v: 24.1, c: 'neutral', tip: '24.1% [21.0, 27.1]' },
+    { label: 'C4  stuck states, successes only', v: 45.3, c: 'accent', tip: '45.3% [41.7, 48.8]' }
+  ], { max: 80, ticks: [0, 20, 40, 60, 80], label: 'Student success for training sets C1 to C4 in ALFWorld and WebShop' });
+
+  hbars('chart-f2', [
+    { header: 'ALFWorld' },
+    { label: 'Student can finish', v: 82, c: 'neutral', tip: '47 of 57 takeovers succeed' },
+    { label: 'Student is stuck', v: 13, c: 'warn', tip: '42 of 332 takeovers succeed' },
+    { header: 'WebShop' },
+    { label: 'Student can finish', v: 59, c: 'neutral', tip: '38 of 64 takeovers succeed' },
+    { label: 'Student is stuck', v: 16, c: 'warn', tip: '54 of 333 takeovers succeed' }
+  ], { max: 100, unit: '%', dec: 0, labW: 170, label: 'Teacher takeover success where the student can finish and where it is stuck' });
+
+  hbars('chart-buy', [
+    { label: 'Vanilla on-policy distillation', v: 23.1, c: 'neutral', tip: '23.1%, 3 seeds' },
+    { label: 'Fine-tune on all takeovers (C1)', v: 50.2, c: 'neutral', tip: '50.2%, 3 seeds' },
+    { label: 'Behavior cloning, to convergence', v: 52.9, c: 'neutral', tip: '52.9%, 3 seeds. Teacher demonstrations' },
+    { label: 'RL alone', v: 61.4, c: 'neutral', tip: '61.4%, 3 seeds. GiGPO' },
+    { label: 'Verified takeovers (C4)', v: 64.5, c: 'accent', tip: '64.5%, 3 seeds' },
+    { label: 'C4, repeated for three rounds', v: 77.5, c: 'accent', tip: '77.5%, 3 seeds' },
+    { label: 'Behavior cloning, then RL', v: 81.5, c: 'neutral', tip: '81.5%, 1 seed (preliminary)' },
+    { label: 'C4, then RL', v: 91.2, c: 'accent', tip: '91.2%, 3 seeds' }
+  ], { max: 100, label: 'ALFWorld success by training method' });
+
+  // Finding 3: gain from verification against teacher takeover success.
+  function scatter(id, pts, label) {
+    var W = 340, H = 290, L = 38, R = 12, T = 12, B = 44, xmax = 75, ymax = 35;
+    var pw = W - L - R, ph = H - T - B;
+    function X(v) { return L + pw * v / xmax; }
+    function Y(v) { return T + ph * (1 - v / ymax); }
+    var svg = el('svg', { viewBox: '0 0 ' + W + ' ' + H, role: 'img', 'aria-label': label });
+    [0, 10, 20, 30].forEach(function (t) {
+      el('line', { x1: L, x2: W - R, y1: Y(t), y2: Y(t), 'class': t === 0 ? 'axis' : 'grid' }, svg);
+      el('text', { x: L - 7, y: Y(t) + 4, 'text-anchor': 'end', 'font-size': 12 }, svg, (t ? '+' : '') + t);
+    });
+    [0, 25, 50, 75].forEach(function (t) {
+      el('text', { x: X(t), y: H - B + 17, 'text-anchor': 'middle', 'font-size': 12 }, svg, t + '%');
+    });
+    el('text', { x: L + pw / 2, y: H - 6, 'text-anchor': 'middle', 'font-size': 12 }, svg, 'Teacher takeover success');
+    [[0, 1, ''], [2, 3, '4 3']].forEach(function (s) {
+      var a = pts[s[0]], b = pts[s[1]];
+      el('line', { x1: X(a.x), y1: Y(a.y), x2: X(b.x), y2: Y(b.y), 'class': 'ln', 'stroke-dasharray': s[2] }, svg);
+    });
+    pts.forEach(function (p, i) {
+      var cx = X(p.x), cy = Y(p.y);
+      el('line', { x1: cx, x2: cx, y1: Y(p.lo), y2: Y(p.hi), 'class': 'whisk' }, svg);
+      if (i < 2) el('circle', { cx: cx, cy: cy, r: 5, 'class': 'mk' }, svg);
+      else el('rect', { x: cx - 4.5, y: cy - 4.5, width: 9, height: 9, 'class': 'mk-open' }, svg);
+      el('text', { x: cx + p.dx, y: cy + p.dy, 'text-anchor': p.anchor || 'start', 'font-size': 12.5, 'class': 'lab' }, svg, p.name);
+      var hit = el('circle', { cx: cx, cy: cy, r: 16, 'class': 'hit' }, svg);
+      hover(hit, '<b>' + p.full + '</b><br>Takeover success ' + p.x.toFixed(1) + '%<br>Gain from verification +' +
+        p.y.toFixed(1) + ' [' + p.lo.toFixed(1) + ', ' + p.hi.toFixed(1) + ']');
+    });
+    document.getElementById(id).appendChild(svg);
+  }
+  scatter('chart-f3a', [
+    { x: 16.2, y: 28.7, lo: 24.1, hi: 33.2, name: '14B', full: 'Qwen3-14B, hand-back', dx: 10, dy: 4 },
+    { x: 22.2, y: 9.9, lo: 7.1, hi: 12.6, name: '32B', full: 'Qwen3-32B, hand-back', dx: -10, dy: 4, anchor: 'end' },
+    { x: 28.1, y: 18.1, lo: 14.5, hi: 21.7, name: '32B', full: 'Qwen3-32B, to the end', dx: 10, dy: -2 },
+    { x: 64.4, y: 3.9, lo: 2.1, hi: 5.7, name: '32B + expert plan', full: 'Qwen3-32B with the expert plan, to the end', dx: 14, dy: -20, anchor: 'end' }
+  ], 'Gain from verification against teacher takeover success, all sampled states');
+  scatter('chart-f3b', [
+    { x: 7.9, y: 16.2, lo: 11.6, hi: 20.8, name: '14B', full: 'Qwen3-14B, hand-back', dx: 0, dy: -38, anchor: 'middle' },
+    { x: 12.2, y: 14.3, lo: 10.9, hi: 17.5, name: '32B', full: 'Qwen3-32B, hand-back', dx: 0, dy: 44, anchor: 'middle' },
+    { x: 21.3, y: 12.1, lo: 8.8, hi: 15.6, name: '32B', full: 'Qwen3-32B, to the end', dx: 10, dy: -4 },
+    { x: 60.7, y: 3.8, lo: 2.0, hi: 5.8, name: '32B + expert plan', full: 'Qwen3-32B with the expert plan, to the end', dx: 14, dy: -20, anchor: 'end' }
+  ], 'Gain from verification against teacher takeover success, stuck states only');
+})();
+</script>
+</body>
+</html>

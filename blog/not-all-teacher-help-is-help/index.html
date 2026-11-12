@@ -306,11 +306,13 @@ footer a { color: var(--ink-2); }
 
 <p><strong>The student passes its teacher.</strong> On ALFWorld tasks neither model has seen, the 1.7B student scores 64.0. The 32B teacher, playing alone with its reasoning mode switched on, scores 53.0. A model nineteen times smaller ends up ahead of the model it learned from, because it only ever studied the teacher's good days.</p>
 
-<p><strong>RL goes much further from here.</strong> Reinforcement learning alone reaches 61.4 in ALFWorld. Started from the filtered student, the same RL recipe reaches 91.2, for less compute. Our reading is that a student already shown the way out of its worst states gives RL something to build on, where RL from scratch has to stumble onto those solutions unaided.</p>
+<p><strong>RL goes much further from here.</strong> Reinforcement learning alone reaches 61.4 in ALFWorld. Started from the filtered student, the same RL recipe reaches 91.2, for less compute. Some of that comes from having a teacher at all: RL started from plain behavior cloning also does well, at 81.5 in the one run we have, with the same RL recipe and step budget. The filtered start is still about ten points ahead. Our reading is that a student already shown the way out of its worst states gives RL something to build on, where RL from scratch has to stumble onto those solutions unaided.</p>
 
-<h2>Where this goes next</h2>
+<h2>What it costs, and where this goes next</h2>
 
-<p>This is ongoing work, and the picture so far comes from two environments, one student, and one family of models. Next come more environments and stronger distillation baselines, and we are testing how much the filter still matters when RL follows. We are also working on the main side effect: fine-tuning a small model on agent data erodes its general abilities, and mixing in replay data looks like it restores most of them.</p>
+<p>One cost should be stated plainly. Fine-tuning a small model on agent data damages what it could do before. Averaged over four general benchmarks (GSM8K, MATH-500, IFEval and MMLU-Redux), the base student scores 75.4, and the student trained on verified takeovers scores 21.3. Mixing the model's own earlier answers back into training as replay data recovers 64.0 without giving up any ALFWorld success. Training with LoRA plus replay recovers 72.8, close to the original, but gives up about 4.5 points on the task. We do not yet have a version that keeps both.</p>
+
+<p>This is ongoing work, and the picture so far comes from two environments, one student, and one family of models. In progress now: more training runs behind every number, including the behavior-cloning-then-RL baseline; a study of how the advantage in WebShop changes as the amount of data grows; a full accounting of what each method costs in compute; and a test of whether the filter still matters once RL follows.</p>
 
 <p>The idea we would keep, whatever the later numbers say, is the change of question. When a student cannot be taught somewhere, it is tempting to ask what is wrong with the student, or with the state. Ask first whether the teacher could do it.</p>
 

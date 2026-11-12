@@ -203,9 +203,18 @@ footer a { color: var(--ink-2); }
 
 <h2>The states that need help are the ones being avoided</h2>
 
-<p>Previous work finds that teaching works best at covered states, where one of the student's own candidate actions would have succeeded. So it avoids the uncovered states, where the student fails completely.</p>
+<p>Much recent work answers the question the same way: stay close to what the student can already do. The mechanisms differ, but the instinct is shared.</p>
+<ul>
+  <li><a href="https://arxiv.org/abs/2603.11178">PACED</a> weights each training problem by how often the student solves it, with a curve that gives almost nothing to problems the student never solves.</li>
+  <li><a href="https://arxiv.org/abs/2602.03412">CSO</a>, built for agents, keeps a teacher's action only if the student can then finish the task from there.</li>
+  <li><a href="https://arxiv.org/abs/2606.15912">Guided-OPD</a> notes that the teacher's supervision is least reliable where the student has drifted far, and responds by keeping the student near the teacher.</li>
+</ul>
+
+<p>In our terms, all of these favor covered states and turn away from uncovered ones, where the student fails completely.</p>
 
 <p>But those are exactly the states where the student most needs help. They are also most of what a weak student produces: in our data, 332 of 389 sampled states in ALFWorld and 333 of 397 in WebShop are uncovered. Avoiding them means leaving the hard five-sixths of the problem untaught.</p>
+
+<p>The closest work to ours goes the other way. <a href="https://arxiv.org/abs/2607.27937">OVCSD</a> calls for help only where every student attempt failed, and keeps only the continuations that complete the task. Its teacher, though, is the student itself with extra skill context, and because it only ever intervenes at those states, it cannot say how they compare with the covered ones. That comparison is what we set out to make.</p>
 
 <h2>The teacher fails there too</h2>
 
@@ -284,7 +293,7 @@ footer a { color: var(--ink-2); }
   <figcaption>Follow each line from left to right: same way of taking over, more reliable teacher, smaller gain from filtering. Bars are 95% intervals.</figcaption>
 </figure>
 
-<p>This may also explain an apparent disagreement in the literature. Some methods, such as <a href="https://arxiv.org/abs/2512.14895">OEC</a> and <a href="https://arxiv.org/abs/2607.27937">OVCSD</a>, insist on keeping only takeovers the environment confirms. <a href="https://arxiv.org/abs/2607.04574">A Few Teacher Steps</a> reports that a handful of unchecked teacher turns works just as well. In our experiments both are true, for different teachers. With the plan-informed teacher, five unchecked turns match full verification. With the ordinary teacher they fall well short. A Few Teacher Steps used a teacher that had been trained with RL on the environment itself, which is the case where checking has little left to remove.</p>
+<p>This may also explain an apparent disagreement in the literature. <a href="https://arxiv.org/abs/2607.04574">A Few Teacher Steps</a> finds that in ALFWorld, short teacher continuations with no success check match or beat success-filtered ones. In our experiments, keeping the first five teacher turns falls well short of filtering. The two setups differ in exactly the place where we find filtering matters: their teacher is a Qwen3-8B trained with RL on the environment, and they sample takeover points uniformly along the trajectory. When we give our own teacher the expert's plan, five unchecked turns match full verification for us too. Both results can hold, each for its own teacher.</p>
 
 <p>There is a hopeful reading of the same result. After filtering, a student taught by the 14B teacher is about as good as one taught by the 32B teacher. A weaker teacher succeeds less often, but when it does succeed, the lesson is worth about as much.</p>
 

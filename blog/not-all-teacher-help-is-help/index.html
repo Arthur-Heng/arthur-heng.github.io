@@ -5,9 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Not All Teacher Help Is Help</title>
 <meta name="author" content="Heng Wang">
-<meta name="description" content="A big teacher's help fails most often exactly where a small agent needs it. Learning only from the takeovers that worked is worth 10 to 21 points.">
+<meta name="description" content="The states where a small agent most needs help look unteachable because the teacher fails there too. Keep only its verified successes and they become the best teaching data.">
 <meta property="og:title" content="Not All Teacher Help Is Help">
-<meta property="og:description" content="A big teacher's help fails most often exactly where a small agent needs it. Learning only from the takeovers that worked is worth 10 to 21 points.">
+<meta property="og:description" content="The states where a small agent most needs help look unteachable because the teacher fails there too. Keep only its verified successes and they become the best teaching data.">
 <meta property="og:type" content="article">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎺</text></svg>">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -176,107 +176,95 @@ footer a { color: var(--ink-2); }
 <article>
 
 <h1>Not All Teacher Help Is Help</h1>
-<p class="dek">A big model's help fails most often exactly where a small agent needs it. Learning only from the help that worked is worth 10 to 21 points, and it changes what reinforcement learning can do afterwards.</p>
+<p class="dek">The states where a small agent most needs help look unteachable. The problem is not the states. The teacher fails there too, and once its failures are filtered out, those states become the best teaching data we have.</p>
 <div class="byline">Heng Wang &middot; November 12, 2026 &middot; work in progress</div>
 
-<p>Imagine a tutor who is brilliant on the problems you could already solve and wrong on most of the ones you are stuck on. You would still learn from that tutor, but not by copying everything they write down.</p>
-
-<p>That is roughly the position of a small language-model agent learning from a big one. We let a 1.7B student play, had a 32B teacher take over from the places the student reached, and checked each takeover against the environment. Three out of four takeovers failed the task. Where the student was actually stuck, more than five out of six failed.</p>
-
 <div class="stats">
-  <div class="stat"><b>77%</b><span>of teacher takeovers fail the task, in both environments</span></div>
-  <div class="stat"><b>13%</b><span>teacher success where the student is stuck, against 82% where it is not</span></div>
-  <div class="stat"><b>+10 to 21</b><span>points from learning only the successful takeovers</span></div>
-  <div class="stat"><b>91.2</b><span>ALFWorld success when RL starts from the verified student. RL alone: 61.4</span></div>
+  <div class="stat"><b>13%</b><span>teacher success at ALFWorld states where the student fails completely. 82% elsewhere</span></div>
+  <div class="stat"><b>1 in 8</b><span>takeovers at those states survive a success check</span></div>
+  <div class="stat"><b>64.5</b><span>ALFWorld success from that eighth alone. 50.1 from all of it</span></div>
+  <div class="stat"><b>45.3</b><span>WebShop success from the same filter. 24.1 without it</span></div>
 </div>
 
-<h2>The recipe everyone uses</h2>
+<h2><span class="num">Setup</span>A big agent takes over from a small one</h2>
 
-<p>What should a small agent take from a big teacher? The common recipe lets the student play and has the teacher take over from states the student reached. DAgger, <a href="https://arxiv.org/abs/2512.14895">OEC</a>, <a href="https://arxiv.org/abs/2609.36246">OLIVE</a> and many on-policy distillation methods work this way. The appeal is clear: the teacher's guidance lands on the student's own mistakes instead of on states the student will never visit.</p>
+<p>We distill a large agent into a small one. The student, Qwen3-1.7B, runs the task. We sample a state from its own trajectory. The teacher, Qwen3-32B, takes over from that state, and the student is fine-tuned on those takeovers.</p>
 
-<p>The recipe quietly assumes the teacher's help is good help. Published work disagrees on whether that needs checking:</p>
-<ul>
-  <li>OEC and <a href="https://arxiv.org/abs/2607.27937">OVCSD</a> keep only takeovers that the environment confirms as successful.</li>
-  <li><a href="https://arxiv.org/abs/2607.04574">A Few Teacher Steps</a> finds that a few unchecked teacher steps work just as well.</li>
-</ul>
-<p>Both can't be the general rule. So we measured it: how much of the teacher's help is worth learning, where the useful part sits, and when sorting it matters.</p>
+<p>The question is which takeovers are worth learning from.</p>
 
-<h2>One batch of help, used four ways</h2>
+<p>Two properties of a takeover can be checked. The first is where it starts. We probe each sampled state with 16 continuations by the student. If at least one succeeds, the state is <em>covered</em>: the student is already close. If none succeeds, it is <em>uncovered</em>: the student fails there completely. The second is how the takeover ends, which the environment tells us: the teacher either completes the task or does not.</p>
 
-<p>A Qwen3-1.7B student learns from a Qwen3-32B teacher in ALFWorld (household tasks, 274 test tasks) and WebShop (shopping, 500 test instructions). Collection is simple:</p>
-<ol>
-  <li>The student plays training tasks, and we sample one state per task.</li>
-  <li>We probe each state with 16 student continuations. If none succeeds, the student is <em>stuck</em> there.</li>
-  <li>The teacher takes over once from each state.</li>
-  <li>A fresh student is fine-tuned on the teacher's turns.</li>
-</ol>
-<p>The same takeovers are then sliced four ways. Because every slice comes from one collection, the cost of gathering the help is the same in every comparison.</p>
+<p>That gives four training sets from one batch of takeovers, so the cost of collecting the help is the same in every comparison.</p>
 
 <figure>
   <div class="card">
     <table class="grid2x2" aria-label="The four training sets">
       <tr><th></th><th>All takeovers</th><th>Successful takeovers only</th></tr>
-      <tr><th class="row">All states</th><td><b>C1</b><span>copy everything</span></td><td class="on"><b>C2</b><span>check the outcome</span></td></tr>
-      <tr><th class="row">Stuck states only</th><td><b>C3</b><span>help where needed</span></td><td class="on"><b>C4</b><span>both filters</span></td></tr>
+      <tr><th class="row">All states</th><td><b>C1</b><span>everything</span></td><td class="on"><b>C2</b><span>verified</span></td></tr>
+      <tr><th class="row">Uncovered states only</th><td><b>C3</b><span>where the student fails</span></td><td class="on"><b>C4</b><span>where the student fails, verified</span></td></tr>
     </table>
   </div>
-  <figcaption>Columns ask whether the help worked. Rows ask whether the student needed it. All numbers below are success rates in percent over three training seeds, with paired bootstrap 95% intervals over test tasks.</figcaption>
+  <figcaption>We run this in ALFWorld (274 test tasks) and WebShop (500 test instructions). Numbers are success rates in percent over three training seeds, with paired bootstrap 95% intervals over test tasks.</figcaption>
 </figure>
 
-<h2><span class="num">Finding 1</span>Only the teacher's successes are worth learning</h2>
+<h2><span class="num">The gap in prior work</span>The states that need help are the ones being avoided</h2>
 
-<p>About three-quarters of the teacher's takeovers fail the task: 77% in both environments. A student trained on the successful quarter beats a student trained on everything, on roughly a quarter of the data.</p>
+<p>Previous work finds that teaching works best at states where the student is already close, meaning one of its own candidate actions would have succeeded. So it avoids the uncovered states, where the student fails completely.</p>
+
+<p>But those are exactly the states where the student most needs help. In our collection they are also most of the states: 332 of 389 in ALFWorld and 333 of 397 in WebShop. A method that only teaches where the student is nearly right leaves the hard part of the task untaught.</p>
+
+<h2><span class="num">Our finding</span>Uncovered states look unteachable because the teacher fails there too</h2>
+
+<p>We asked why uncovered states look unteachable, and the answer is not the states. It is the teacher.</p>
 
 <figure>
   <div class="card">
-    <h4>Student success after training on each slice</h4>
+    <h4>Teacher takeover success, by where the takeover starts</h4>
+    <p class="sub">Percent of takeovers that complete the task</p>
+    <div class="legend"><span><i style="background:var(--neutral)"></i>Covered states</span><span><i style="background:var(--warn)"></i>Uncovered states</span></div>
+    <div id="chart-f2"></div>
+  </div>
+  <figcaption>ALFWorld: 47 of 57 covered against 42 of 332 uncovered. WebShop: 38 of 64 against 54 of 333.</figcaption>
+</figure>
+
+<p>The teacher succeeds on only 13% and 16% of takeovers at uncovered states, against 82% and 59% at covered ones. Two checks say this is about the teacher and not about the states:</p>
+<ul>
+  <li><strong>The states are not dead ends.</strong> A scripted expert solves 88% of the uncovered ALFWorld states where the teacher failed. The task was still winnable when the teacher took over.</li>
+  <li><strong>The tasks are hard for both models.</strong> Playing from the very start, the teacher fails 53% of the tasks behind uncovered states, against 7% of the tasks behind covered ones.</li>
+</ul>
+
+<p class="pull">The student fails on hard tasks, and hard tasks are where the teacher is least reliable.</p>
+
+<p>So the raw teacher data from uncovered states is mostly failed attempts, and training on it gives no gain over using all states: 50.1 against 50.2 in ALFWorld, 24.1 against 24.0 in WebShop. Seen this way, the earlier conclusion makes sense. Uncovered states do look like poor places to teach, if you train on whatever the teacher does there.</p>
+
+<h2><span class="num">The result</span>Uncovered states don't need to be avoided. They need filtering</h2>
+
+<p>If we keep only the teacher's verified successes at uncovered states, they become the best teaching data we have: 64.5 on ALFWorld and 45.3 on WebShop, from about one in eight takeovers.</p>
+
+<figure>
+  <div class="card">
+    <h4>Student success after training on each set</h4>
     <p class="sub">Percent of test tasks solved, mean of three seeds</p>
     <div class="legend"><span><i style="background:var(--neutral)"></i>All takeovers</span><span><i style="background:var(--accent)"></i>Successful takeovers only</span></div>
     <div id="chart-f1"></div>
   </div>
-  <figcaption>Keeping only successes adds 9.9 points in ALFWorld [7.0, 12.8] and 19.8 in WebShop [16.9, 22.8]. At stuck states the gains are 14.3 and 21.2.</figcaption>
+  <figcaption>At uncovered states the filter adds 14.3 points in ALFWorld and 21.2 in WebShop. Over all states it adds 9.9 [7.0, 12.8] and 19.8 [16.9, 22.8]. With the filter on, uncovered states beat all states by 4.4 and 1.5.</figcaption>
 </figure>
 
-<p>The rows of the table matter much less than the columns. Restricting takeovers to stuck states adds 4.4 points in ALFWorld and 1.5 in WebShop, and only when the outcome check is already on. Without it, C3 and C1 are indistinguishable.</p>
+<h3>The filter has to check actual success</h3>
 
-<p>Can something cheaper than running every takeover to its end do the same job? We tried two shortcuts, and neither closes the gap:</p>
+<p>Two cheaper filters fall well short:</p>
 <ul>
-  <li><strong>Truncation.</strong> Keeping the first five teacher turns of every takeover, unchecked, stays 8.5 to 23.6 points below verification.</li>
-  <li><strong>Format filtering.</strong> Dropping only takeovers with malformed actions stays 13.1 to 21.4 points below (ALFWorld).</li>
+  <li><strong>Keeping the first few turns.</strong> The first five teacher turns of every takeover, unchecked, stay 8.5 to 23.6 points below verification.</li>
+  <li><strong>Dropping malformed outputs.</strong> Removing only takeovers with malformed actions stays 13.1 to 21.4 points below (ALFWorld).</li>
 </ul>
-<p>The bad help is not obviously bad. It is well-formed, confident, and starts out plausibly. You find out it was wrong when the task doesn't get done.</p>
+<p>A failed takeover is well-formed and starts out plausibly. What separates it from a good one is whether the task gets done.</p>
 
-<h2><span class="num">Finding 2</span>The teacher is weakest where the student is stuck</h2>
+<h3>It matters more the weaker the teacher is</h3>
 
-<p>If the failures were spread evenly, this would be a story about noise. They are not. The teacher succeeds where the student could have managed alone, and mostly fails where the student is stuck.</p>
-
-<figure>
-  <div class="card">
-    <h4>Teacher takeover success, by whether the student needed help</h4>
-    <p class="sub">Percent of takeovers that complete the task</p>
-    <div class="legend"><span><i style="background:var(--neutral)"></i>Student can finish on its own</span><span><i style="background:var(--warn)"></i>Student is stuck</span></div>
-    <div id="chart-f2"></div>
-  </div>
-  <figcaption>ALFWorld: 47 of 57 against 42 of 332. WebShop: 38 of 64 against 54 of 333.</figcaption>
-</figure>
-
-<p class="pull">Student need and teacher reliability pull in opposite directions.</p>
-
-<p>Two checks explain why:</p>
+<p>We changed the teacher and repeated the comparison in ALFWorld. Within each takeover protocol, a less reliable teacher makes the filter worth more:</p>
 <ul>
-  <li><strong>These are not dead ends.</strong> A scripted expert solves 88% of the stuck ALFWorld states where the teacher failed. The task was still winnable when the teacher took over.</li>
-  <li><strong>These are tasks the teacher also finds hard.</strong> Playing from the very start, the teacher fails 53% of the tasks behind stuck states, against 7% of the tasks behind other states.</li>
-</ul>
-
-<p>So the student and the teacher share a notion of difficulty. The student gets stuck on hard tasks, and hard tasks are where the teacher is least reliable. <a href="https://arxiv.org/abs/2606.15912">Guided-OPD</a> reports a related effect for teacher scoring under distribution shift. Here the cause is task difficulty that both models share, and it is measured on what the teacher actually does, not on how it scores.</p>
-
-<p>This is why targeting help at stuck states is not enough by itself. Asking for help "where it is needed" selects exactly the states where the help is worst. Targeting pays only after verification has removed the failures.</p>
-
-<h2><span class="num">Finding 3</span>The weaker the teacher, the more checking pays</h2>
-
-<p>We changed the teacher and repeated the comparison in ALFWorld. Within each takeover protocol, a less reliable teacher makes verification worth more:</p>
-<ul>
-  <li><strong>Teacher plays 10 turns, then hands back.</strong> A 14B teacher (16% takeover success) gains 28.7 points from verification. The 32B teacher (22%) gains 9.9.</li>
+  <li><strong>Teacher plays 10 turns, then hands back.</strong> A 14B teacher (16% takeover success) gains 28.7 points from the filter. The 32B teacher (22%) gains 9.9.</li>
   <li><strong>Teacher plays to the end.</strong> The 32B teacher (28%) gains 18.1. The same teacher given the expert's plan (64%) gains 3.9.</li>
 </ul>
 
@@ -290,11 +278,11 @@ footer a { color: var(--ink-2); }
     </div>
     <div class="duo">
       <div><p class="ptitle">All sampled states</p><div id="chart-f3a"></div></div>
-      <div><p class="ptitle">Stuck states only</p><div id="chart-f3b"></div></div>
+      <div><p class="ptitle">Uncovered states only</p><div id="chart-f3b"></div></div>
     </div>
     <details><summary>Show the numbers</summary>
       <table class="data">
-        <tr><th>Teacher</th><th>Protocol</th><th class="n">Takeover success, all / stuck</th><th class="n">Gain, all states</th><th class="n">Gain, stuck states</th></tr>
+        <tr><th>Teacher</th><th>Protocol</th><th class="n">Takeover success, all / uncovered</th><th class="n">Gain, all states</th><th class="n">Gain, uncovered states</th></tr>
         <tr><td>Qwen3-14B</td><td>hand-back</td><td class="n">16.2 / 7.9</td><td class="n">+28.7 [24.1, 33.2]</td><td class="n">+16.2 [11.6, 20.8]</td></tr>
         <tr><td>Qwen3-32B</td><td>hand-back</td><td class="n">22.2 / 12.2</td><td class="n">+9.9 [7.1, 12.6]</td><td class="n">+14.3 [10.9, 17.5]</td></tr>
         <tr><td>Qwen3-32B</td><td>to the end</td><td class="n">28.1 / 21.3</td><td class="n">+18.1 [14.5, 21.7]</td><td class="n">+12.1 [8.8, 15.6]</td></tr>
@@ -305,53 +293,41 @@ footer a { color: var(--ink-2); }
   <figcaption>Compare points joined by a line: same protocol, different teacher. The two protocols are not comparable with each other, because playing to the end changes what a takeover contains.</figcaption>
 </figure>
 
-<p>This may be what reconciles the two camps. With the reliable teacher, five unchecked teacher turns do as well as verified takeovers. With the plain teacher they do not (Finding 1). A Few Teacher Steps used a teacher trained with RL on the environment itself, which is the regime where checking adds little. Both camps can be right about their own teacher.</p>
+<p>With the reliable teacher, five unchecked turns do as well as verified takeovers. That may explain why <a href="https://arxiv.org/abs/2607.04574">A Few Teacher Steps</a> found no need for checking, while <a href="https://arxiv.org/abs/2512.14895">OEC</a> and <a href="https://arxiv.org/abs/2607.27937">OVCSD</a> keep only confirmed successes: its teacher was trained with RL on the environment, the regime where the filter adds little.</p>
 
-<p>Verification also makes the choice of teacher matter less. A student trained on verified 14B takeovers is statistically level with one trained on verified 32B takeovers (&minus;2.7 points [&minus;7.7, +2.4]). A weaker teacher succeeds less often, but its successes teach about as well.</p>
+<h3>Against the standard ways of using a teacher</h3>
 
-<h2>What it buys</h2>
-
-<p>In ALFWorld, verified takeovers beat the standard ways of using a teacher, and they give RL a much better start. RL here is GiGPO with its official recipe, run to a common step budget.</p>
+<p>The resulting student beats behavior cloning and vanilla on-policy distillation on ALFWorld.</p>
 
 <figure>
   <div class="card">
     <h4>ALFWorld success by training method</h4>
     <p class="sub">Percent of 274 test tasks solved</p>
-    <div class="legend"><span><i style="background:var(--neutral)"></i>Baselines</span><span><i style="background:var(--accent)"></i>Built on verified takeovers at stuck states (C4)</span></div>
+    <div class="legend"><span><i style="background:var(--neutral)"></i>Baselines</span><span><i style="background:var(--accent)"></i>Verified takeovers at uncovered states (C4)</span></div>
     <div id="chart-buy"></div>
   </div>
-  <figcaption>Three training seeds per row, except behavior cloning followed by RL, which has one seed so far.</figcaption>
+  <figcaption>Three training seeds per row, except behavior cloning followed by RL, which has one seed so far. RL is GiGPO with its official recipe, run to a common step budget.</figcaption>
 </figure>
 
+<p>On WebShop it is about 8 points ahead of behavior cloning at equal data size: 52.3 against 44.7 at 259 examples. The gap closes by about 2,500 examples.</p>
+
+<h2>Further results</h2>
 <ul>
-  <li><strong>The student passes its teacher.</strong> On unseen tasks C4 reaches 64.0, against 53.0 for the 32B teacher playing alone with thinking on. A model nineteen times smaller ends up ahead of the model it learned from, because it learned only from the teacher's good days.</li>
-  <li><strong>RL ends about 30 points higher.</strong> C4 followed by RL beats RL alone by 29.8 points [25.2, 34.7], at lower compute.</li>
-  <li><strong>The data matters, not just the warm start.</strong> Starting RL from C4 beats starting it from behavior cloning by 10.3 points [6.6, 14.1] (one seed, preliminary).</li>
+  <li><strong>The student passes its teacher.</strong> On unseen ALFWorld tasks C4 reaches 64.0, against 53.0 for the 32B teacher playing alone with thinking on.</li>
+  <li><strong>RL starts much better.</strong> In ALFWorld, C4 followed by RL reaches 91.2 and beats RL alone by 29.8 points [25.2, 34.7], at lower compute. It also beats RL started from behavior cloning by 10.3 points [6.6, 14.1] (one seed, preliminary).</li>
+  <li><strong>WebShop gains speed, not ceiling.</strong> C4 followed by RL ties RL alone at about 70 but gets there sooner: 61.3 against 11.2 at a quarter of RL's compute (one seed).</li>
+  <li><strong>The teacher's size matters less after filtering.</strong> A student trained on verified 14B takeovers is statistically level with one trained on verified 32B takeovers (&minus;2.7 points [&minus;7.7, +2.4]).</li>
 </ul>
-
-<h3>WebShop is the contrast case</h3>
-
-<p>WebShop episodes are short, and RL finds successes without help. There the picture is different:</p>
-<ul>
-  <li><strong>Against behavior cloning.</strong> Verified takeovers are worth about the same per example as teacher demonstrations. Takeovers at stuck states are more data-efficient when data is small: 52.3 against 44.7 at 259 examples. The gap closes by about 2,500 examples.</li>
-  <li><strong>Against RL.</strong> C4 followed by RL ties RL alone at about 70 but gets there sooner: 61.3 against 11.2 at a quarter of RL's compute (equal-compute numbers are from one seed).</li>
-</ul>
-
-<div class="note">
-  <p><strong>The pattern across the two environments:</strong> teacher help raises the ceiling where RL explores poorly, and buys speed where RL can explore without it.</p>
-</div>
 
 <h2>Limits and what is next</h2>
 
-<p>This is a draft with numbers as of November 12. The recipe is not new: it belongs to the DAgger and OEC family. The contribution is the controlled comparison and the account of when teacher help is worth learning.</p>
+<p>This is a draft with numbers as of November 12. The recipe is not new: it belongs to the DAgger and OEC family. The contribution is the controlled comparison and the account of why uncovered states looked unteachable.</p>
 <ul>
   <li><strong>Scope.</strong> Two environments, one student size, one model family. A third environment, TextCraft, was limited by action-format errors and supports no conclusion.</li>
   <li><strong>Baselines.</strong> On-policy distillation is represented by a vanilla implementation only. Stronger variants such as <a href="https://arxiv.org/abs/2604.24005">TCOD</a> and <a href="https://arxiv.org/abs/2609.40285">PivotOPD</a> are not reproduced yet.</li>
-  <li><strong>Cost.</strong> Probing for stuck states does not save compute, and fine-tuning on agent data costs general ability. The mean over four general benchmarks falls from 75.4 to 21.3 (one seed). Mixing in replay data restores it to 64.0 with no loss in ALFWorld.</li>
+  <li><strong>Cost.</strong> Probing for uncovered states does not save compute, and fine-tuning on agent data costs general ability. The mean over four general benchmarks falls from 75.4 to 21.3 (one seed). Mixing in replay data restores it to 64.0 with no loss in ALFWorld.</li>
   <li><strong>Still running.</strong> RL started from unfiltered takeovers will show whether verification still matters once RL follows. A second seed is running for behavior cloning followed by RL, and the last seeds for WebShop RL.</li>
 </ul>
-
-<p>If you take one thing from this: before asking how to get more help from a bigger model, check how much of the help you already have was right. In our setting the answer was a quarter, and the wrong three-quarters sat exactly where the student was looking for guidance.</p>
 
 </article>
 </main>
@@ -422,23 +398,23 @@ footer a { color: var(--ink-2); }
     { header: 'ALFWorld' },
     { label: 'C1  all states, all takeovers', v: 50.2, c: 'neutral', tip: '50.2% [45.6, 54.7]' },
     { label: 'C2  all states, successes only', v: 60.1, c: 'accent', tip: '60.1% [56.0, 64.1]' },
-    { label: 'C3  stuck states, all takeovers', v: 50.1, c: 'neutral', tip: '50.1% [45.7, 54.5]' },
-    { label: 'C4  stuck states, successes only', v: 64.5, c: 'accent', tip: '64.5% [60.2, 68.1]' },
+    { label: 'C3  uncovered, all takeovers', v: 50.1, c: 'neutral', tip: '50.1% [45.7, 54.5]' },
+    { label: 'C4  uncovered, successes only', v: 64.5, c: 'accent', tip: '64.5% [60.2, 68.1]' },
     { header: 'WebShop' },
     { label: 'C1  all states, all takeovers', v: 24.0, c: 'neutral', tip: '24.0% [21.0, 27.1]' },
     { label: 'C2  all states, successes only', v: 43.8, c: 'accent', tip: '43.8% [40.3, 47.2]' },
-    { label: 'C3  stuck states, all takeovers', v: 24.1, c: 'neutral', tip: '24.1% [21.0, 27.1]' },
-    { label: 'C4  stuck states, successes only', v: 45.3, c: 'accent', tip: '45.3% [41.7, 48.8]' }
+    { label: 'C3  uncovered, all takeovers', v: 24.1, c: 'neutral', tip: '24.1% [21.0, 27.1]' },
+    { label: 'C4  uncovered, successes only', v: 45.3, c: 'accent', tip: '45.3% [41.7, 48.8]' }
   ], { max: 80, ticks: [0, 20, 40, 60, 80], label: 'Student success for training sets C1 to C4 in ALFWorld and WebShop' });
 
   hbars('chart-f2', [
     { header: 'ALFWorld' },
-    { label: 'Student can finish', v: 82, c: 'neutral', tip: '47 of 57 takeovers succeed' },
-    { label: 'Student is stuck', v: 13, c: 'warn', tip: '42 of 332 takeovers succeed' },
+    { label: 'Covered states', v: 82, c: 'neutral', tip: '47 of 57 takeovers succeed' },
+    { label: 'Uncovered states', v: 13, c: 'warn', tip: '42 of 332 takeovers succeed' },
     { header: 'WebShop' },
-    { label: 'Student can finish', v: 59, c: 'neutral', tip: '38 of 64 takeovers succeed' },
-    { label: 'Student is stuck', v: 16, c: 'warn', tip: '54 of 333 takeovers succeed' }
-  ], { max: 100, unit: '%', dec: 0, labW: 170, label: 'Teacher takeover success where the student can finish and where it is stuck' });
+    { label: 'Covered states', v: 59, c: 'neutral', tip: '38 of 64 takeovers succeed' },
+    { label: 'Uncovered states', v: 16, c: 'warn', tip: '54 of 333 takeovers succeed' }
+  ], { max: 100, unit: '%', dec: 0, labW: 170, label: 'Teacher takeover success at covered and uncovered states' });
 
   hbars('chart-buy', [
     { label: 'Vanilla on-policy distillation', v: 23.1, c: 'neutral', tip: '23.1%, 3 seeds' },
@@ -493,7 +469,7 @@ footer a { color: var(--ink-2); }
     { x: 12.2, y: 14.3, lo: 10.9, hi: 17.5, name: '32B', full: 'Qwen3-32B, hand-back', dx: 0, dy: 44, anchor: 'middle' },
     { x: 21.3, y: 12.1, lo: 8.8, hi: 15.6, name: '32B', full: 'Qwen3-32B, to the end', dx: 10, dy: -4 },
     { x: 60.7, y: 3.8, lo: 2.0, hi: 5.8, name: '32B + expert plan', full: 'Qwen3-32B with the expert plan, to the end', dx: 14, dy: -20, anchor: 'end' }
-  ], 'Gain from verification against teacher takeover success, stuck states only');
+  ], 'Gain from verification against teacher takeover success, uncovered states only');
 })();
 </script>
 </body>

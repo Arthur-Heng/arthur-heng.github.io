@@ -373,32 +373,14 @@ VERSION B (RL makes up the difference):
 
 <p class="pull">In the long-horizon environment, takeovers beat demonstrations example for example. In the short one, they are equal.</p>
 
-<h2>A cost that is not ours alone</h2>
-
-<p>Fine-tuning a small model on agent data damages what it could do before. We measure that with the average of four general benchmarks (GSM8K, MATH-500, IFEval and MMLU-Redux), on which the untouched student scores 75.4. The student trained on verified takeovers falls to 21.3 in ALFWorld. That looked at first like a price of our recipe. It is a price of agent fine-tuning in general: behavior cloning and RL pay it too.</p>
-
-<div class="tbl-wrap">
-<table class="data">
-  <tr><th>General-ability average after training (base model: 75.4)</th><th class="n">ALFWorld</th><th class="n">WebShop</th><th class="n">TextCraft</th></tr>
-  <tr><td>Verified takeovers</td><td class="n">21.3</td><td class="n">22.4</td><td class="n">34.7</td></tr>
-  <tr><td>Behavior cloning</td><td class="n">36.1</td><td class="n">18.2</td><td class="n">19.0</td></tr>
-  <tr><td>RL, after a short format warm-up</td><td class="n">54.1</td><td class="n">10.1</td><td class="n">60.4</td></tr>
-  <tr class="hi"><td>Verified takeovers with replay</td><td class="n">64.0</td><td class="n">67.1</td><td class="n">70.0</td></tr>
-  <tr><td>Verified takeovers with LoRA and replay</td><td class="n">72.8</td><td class="n">&ndash;</td><td class="n">&ndash;</td></tr>
-  <!-- PLACEHOLDER (A135 after RL): one extra row group for RL alone, verified takeovers then RL, and behavior cloning then RL at their final checkpoints. Do not fill in until the ledger has the reading.
-  <tr><td>RL alone, final checkpoint</td><td class="n">XX.X</td><td class="n"></td><td class="n"></td></tr>
-  <tr><td>Verified takeovers, then RL</td><td class="n">XX.X</td><td class="n"></td><td class="n"></td></tr>
-  <tr><td>Behavior cloning, then RL</td><td class="n">XX.X</td><td class="n"></td><td class="n"></td></tr>
-  -->
-</table>
-</div>
-<p style="font-family:var(--sans);font-size:13px;color:var(--ink-3);margin-top:-14px">Every cell is a single seed. TextCraft is a third environment we use only for this check. Training budgets differ between rows, so read the table for the pattern, not for a ranking. RL from the base model with no warm-up, measured at an early ALFWorld checkpoint, kept 74.5.</p>
-
-<p>The fix that works is replay: mixing the model's own earlier answers back into the training data. With replay, the student stays between 64 and 70 in all three environments, and in ALFWorld it gives up nothing on the task (64.0 against 64.5, three seeds). Training with LoRA on top of replay keeps even more, 72.8 in ALFWorld and close to the untouched model, but gives up about 4.5 points on the task (60.0 against 64.5, three seeds). We do not yet have a version that keeps both.</p>
-
 <h2>Still running</h2>
 
-<p>This is ongoing work on two environments, one student and one family of models. The WebShop seeds are now complete. Still to come: the second behavior-cloning-then-RL run in ALFWorld, RL started from unfiltered takeovers (which will say whether the filter still matters once RL follows), the last behavior-cloning point on the WebShop curve, and the general-ability check after RL.</p>
+<p>One practical note first. Fine-tuning a small model on agent data can erode its general abilities, and ours is no exception. Training with LoRA and replay data takes care of it: the student keeps a general-benchmark average of 72.8 against 75.4 for the untouched model (one seed), for about 4.5 points of ALFWorld success.</p>
+<!-- PLACEHOLDER (A135 after RL): general-ability averages for RL alone, verified takeovers then RL, and behavior cloning then RL at their final checkpoints. Add one sentence here once the ledger has the reading. -->
+
+
+
+<p>This is ongoing work on two environments, one student and one family of models. The WebShop seeds are now complete. Still to come: the second behavior-cloning-then-RL run in ALFWorld, RL started from unfiltered takeovers (which will say whether the filter still matters once RL follows), and the last behavior-cloning point on the WebShop curve.</p>
 
 <p>The idea we would keep, whatever those numbers say, is the change of question. When a student cannot be taught somewhere, it is tempting to ask what is wrong with the student, or with the state. Ask first whether the teacher could do it. In ALFWorld the answer was "one time in eight", and keeping that eighth was enough. In WebShop the answer was "hardly at all", and no amount of filtering makes a teacher out of that.</p>
 

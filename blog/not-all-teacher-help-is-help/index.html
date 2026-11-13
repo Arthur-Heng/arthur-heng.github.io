@@ -129,6 +129,8 @@ svg .mk { fill: var(--ink); stroke: var(--surface); stroke-width: 2; }
 svg .mk-open { fill: var(--surface); stroke: var(--ink); stroke-width: 2; }
 svg .ln { stroke: var(--ink-2); stroke-width: 2; fill: none; }
 svg .whisk { stroke: var(--ink-3); stroke-width: 1.5; }
+svg .sline { fill: none; stroke-width: 2; stroke-linejoin: round; }
+svg .sdot { stroke: var(--surface); stroke-width: 2; }
 .legend { display: flex; flex-wrap: wrap; gap: 6px 18px; font-family: var(--sans); font-size: 13px; color: var(--ink-2); margin: 0 0 10px; }
 .legend i { display: inline-block; width: 11px; height: 11px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; }
 .legend svg { display: inline-block; width: 26px; height: 12px; margin-right: 6px; vertical-align: -1px; }
@@ -178,13 +180,15 @@ footer a { color: var(--ink-2); }
 
 <h1>The Myth of the Unteachable State: <span class="h1sub">Teachability Is a Teacher Problem</span></h1>
 <p class="dek">Small agents are usually taught where they are almost right, and left alone where they fail completely. We think that is a misdiagnosis. Those states are not unteachable. The teacher is failing there too.</p>
-<div class="byline">Heng Wang &middot; November 12, 2026 &middot; ongoing work</div>
+<div class="byline">Heng Wang &middot; November 12, 2026 &middot; updated November 13 &middot; ongoing work</div>
 
 <p>There is a piece of folk wisdom in agent distillation: teach the student where it is already close. If the small model was one good action away from solving the task, a nudge from a big model goes a long way. If the small model is hopelessly lost, the nudge is wasted, so don't bother.</p>
 
 <p>It is a reasonable rule, and it has an uncomfortable consequence. The states where the student is hopelessly lost are the states where it most needs a teacher. A method that skips them is tutoring only the questions the student nearly got right.</p>
 
 <p>We went looking for what makes those states so hard to teach. The answer turned out to have little to do with the student.</p>
+
+<p>What follows is an analysis of when a teacher's help is worth learning. It is not a pitch for a new method. It ends with one strong practical result, in ALFWorld, and one clear boundary, in WebShop.</p>
 
 <div class="stats">
   <div class="stat"><b>13%</b><span>how often the teacher succeeds where the student fails completely. Elsewhere: 82%</span></div>
@@ -200,6 +204,8 @@ footer a { color: var(--ink-2); }
 <p>The question is which takeovers are worth learning from.</p>
 
 <p>To answer it we label every state by how the student was doing when the teacher arrived. We let the student try 16 different continuations from that state. If at least one of them solves the task, the state is <em>covered</em>: the student is already close. If all 16 fail, the state is <em>uncovered</em>: left alone, the student has no way out.</p>
+
+<p>Unless we say otherwise, every score below is the percent of test tasks solved, averaged over three training seeds, and numbers in brackets are 95% intervals.</p>
 
 <h2>The states that need help are the ones being avoided</h2>
 
@@ -227,7 +233,7 @@ footer a { color: var(--ink-2); }
     <div class="legend"><span><i style="background:var(--neutral)"></i>Covered states</span><span><i style="background:var(--warn)"></i>Uncovered states</span></div>
     <div id="chart-f2"></div>
   </div>
-  <figcaption>The teacher is reliable where the student could have managed alone, and unreliable where the student could not.</figcaption>
+  <figcaption>The teacher is reliable where the student could have managed alone, and unreliable where the student could not. ALFWorld: 47 of 57 takeovers against 42 of 332. WebShop: 38 of 64 against 54 of 333.</figcaption>
 </figure>
 
 <p>The teacher succeeds on only 13% and 16% of takeovers at uncovered states, against 82% and 59% at covered ones. The big model looks like a good teacher mainly on the problems the student could already solve.</p>
@@ -238,13 +244,13 @@ footer a { color: var(--ink-2); }
 
 <p class="pull">The student gets lost on hard tasks, and hard tasks are where the teacher is least reliable.</p>
 
-<p>So the raw teacher data from uncovered states is mostly failed attempts, and a student trained on it is mostly imitating failure. Training on takeovers from uncovered states gives no gain over using all states: 50.1 against 50.2 in ALFWorld, 24.1 against 24.0 in WebShop. That is where the myth comes from. Uncovered states do look like bad places to teach, as long as you train on whatever the teacher happened to do there.</p>
+<p>So the raw teacher data from uncovered states is mostly failed attempts, and a student trained on it is mostly imitating failure. Training on takeovers from uncovered states gives no gain over using all states: 50.1 against 50.2 in ALFWorld (&minus;0.1 [&minus;1.8, +1.6]), 24.1 against 24.0 in WebShop (+0.2 [&minus;1.3, +1.6]). That is where the myth comes from. Uncovered states do look like bad places to teach, as long as you train on whatever the teacher happened to do there.</p>
 
 <h2>Don't avoid them. Filter them.</h2>
 
 <p>If the trouble is the teacher's failures, the fix is to stop learning from them. Every takeover ends with a verdict from the environment: the task was solved or it was not. We keep only the takeovers that solved it.</p>
 
-<p>With that one change, uncovered states go from no better than any other data to the best teaching data we have: 64.5 on ALFWorld and 45.3 on WebShop, from about one in eight takeovers.</p>
+<p>With that one change, uncovered states stop being a liability. A student trained only on the verified takeovers from uncovered states scores 64.5 on ALFWorld and 45.3 on WebShop, from about one in eight takeovers. At those states the filter is worth 14.3 points in ALFWorld [10.9, 17.5] and 21.2 in WebShop [18.3, 24.1].</p>
 
 <figure>
   <div class="card">
@@ -253,10 +259,12 @@ footer a { color: var(--ink-2); }
     <div class="legend"><span><i style="background:var(--neutral)"></i>All takeovers</span><span><i style="background:var(--accent)"></i>Successful takeovers only</span></div>
     <div id="chart-f1"></div>
   </div>
-  <figcaption>Filtering for success is worth 10 to 21 points. Once the filter is on, the uncovered states do at least as well as the full set, and clearly better in ALFWorld.</figcaption>
+  <figcaption>Over all states the filter adds 9.9 points in ALFWorld [7.1, 12.6] and 19.8 in WebShop [16.8, 22.8]. Hover a bar for its interval.</figcaption>
 </figure>
 
 <p>The student ends up learning from far less data, and doing far better. Seven-eighths of what the teacher produced at those states was holding it back.</p>
+
+<p>Does that make uncovered states the best place to teach? Not in general. In ALFWorld the filtered takeovers from uncovered states beat the filtered full set by 4.4 points [1.6, 6.9]. In WebShop the two are level (+1.5 [&minus;0.1, +3.1]). The claim is the narrower one in the title: these states are not unteachable, and nothing about them needs avoiding.</p>
 
 <h3>Only real success counts</h3>
 
@@ -266,7 +274,7 @@ footer a { color: var(--ink-2); }
 
 <h3>The weaker the teacher, the more it matters</h3>
 
-<p>If the filter works by removing the teacher's failures, it should matter most when the teacher fails most. We swapped teachers in ALFWorld to check. A smaller 14B teacher, which succeeds less often than the 32B one, gains almost three times as much from filtering. A 32B teacher that is handed the expert's plan, and so succeeds on most takeovers, barely needs the filter at all.</p>
+<p>If the filter works by removing the teacher's failures, it should matter most when the teacher fails most. We swapped teachers in ALFWorld to check. A smaller 14B teacher, which succeeds less often than the 32B one, gains almost three times as much from filtering: 28.7 points [24.1, 33.2] against 9.9 [7.1, 12.6]. A 32B teacher that is handed the expert's plan, and so succeeds on most takeovers, barely needs the filter at all (3.9 [2.1, 5.7]).</p>
 
 <figure>
   <div class="card">
@@ -295,11 +303,13 @@ footer a { color: var(--ink-2); }
 
 <p>This may also explain an apparent disagreement in the literature. <a href="https://arxiv.org/abs/2607.04574">A Few Teacher Steps</a> finds that in ALFWorld, short teacher continuations with no success check match or beat success-filtered ones. In our experiments, keeping the first five teacher turns falls well short of filtering. The two setups differ in exactly the place where we find filtering matters: their teacher is a Qwen3-8B trained with RL on the environment, and they sample takeover points uniformly along the trajectory. When we give our own teacher the expert's plan, five unchecked turns match full verification for us too. Both results can hold, each for its own teacher.</p>
 
-<p>There is a hopeful reading of the same result. After filtering, a student taught by the 14B teacher is about as good as one taught by the 32B teacher. A weaker teacher succeeds less often, but when it does succeed, the lesson is worth about as much.</p>
+<p>There is a hopeful reading of the same result. After filtering, a student taught by the 14B teacher is about as good as one taught by the 32B teacher (&minus;2.7 points [&minus;7.7, +2.4]). A weaker teacher succeeds less often, but when it does succeed, the lesson is worth about as much.</p>
 
-<h2>What the filtered student can do</h2>
+<h2>Where it pays: ALFWorld</h2>
 
-<p>The student trained on verified takeovers at uncovered states beats the usual ways of learning from a teacher. In ALFWorld it is ahead of behavior cloning on the teacher's own demonstrations, and far ahead of vanilla on-policy distillation. In WebShop it is about 8 points ahead of behavior cloning at equal data size when examples are scarce, an edge that fades as data grows.</p>
+<p>ALFWorld is the long-horizon environment, and it is where verified takeovers earn their keep.</p>
+
+<p>Start with the obvious objection: is a verified takeover just a demonstration by another name? The natural comparison is behavior cloning, where the teacher plays whole tasks alone and the student imitates its successes. With the same number of training examples, takeovers win. Verified takeovers from all states beat behavior cloning by 9.4 points [6.4, 12.3] at 490 examples, and those from uncovered states beat it by 23.1 [19.6, 26.8] at 257. A lesson that starts from the student's own mistake is worth more than one that starts from the teacher's clean opening.</p>
 
 <figure>
   <div class="card">
@@ -308,22 +318,88 @@ footer a { color: var(--ink-2); }
     <div class="legend"><span><i style="background:var(--neutral)"></i>Other methods</span><span><i style="background:var(--accent)"></i>Verified takeovers at uncovered states</span></div>
     <div id="chart-buy"></div>
   </div>
-  <figcaption>RL is GiGPO. * One training run so far; every other row averages three.</figcaption>
+  <figcaption>RL is GiGPO. * One training run so far; every other row averages three. Behavior cloning here uses all of the teacher's demonstrations, trained to convergence.</figcaption>
 </figure>
 
-<p>Two results surprised us.</p>
+<p><strong>Imitating the teacher wholesale gets you the teacher.</strong> Vanilla on-policy distillation lands at 23.1 [19.2, 27.0]. That is about what the teacher itself scores when it plays alone in the no-reasoning mode it teaches in (23 to 24, depending on the task split). It is what one should expect from an objective that pulls the student toward the teacher token by token: the student inherits the failures along with everything else. We ran it for 200 steps and did not test whether it keeps improving beyond that.</p>
 
-<p><strong>The student passes its teacher.</strong> On ALFWorld tasks neither model has seen, the 1.7B student scores 64.0. The 32B teacher, playing alone with its reasoning mode switched on, scores 53.0. A model nineteen times smaller ends up ahead of the model it learned from, because it only ever studied the teacher's good days.</p>
+<p><strong>The student passes its teacher.</strong> On ALFWorld tasks neither model has seen, the 1.7B student scores 64.0 [58.3, 69.9]. The 32B teacher, playing alone with its reasoning mode switched on, scores 53.0 [44.8, 61.2]. A model nineteen times smaller ends up ahead of the model it learned from (+11.0 [3.8, 18.4]), because it only ever studied the teacher's good days.</p>
 
-<p><strong>RL goes much further from here.</strong> Reinforcement learning alone reaches 61.4 in ALFWorld. Started from the filtered student, the same RL recipe reaches 91.2, for less compute. Some of that comes from having a teacher at all: RL started from plain behavior cloning also does well, at 81.5 in the one run we have, with the same RL recipe and step budget. The filtered start is still about ten points ahead. Our reading is that a student already shown the way out of its worst states gives RL something to build on, where RL from scratch has to stumble onto those solutions unaided.</p>
+<p><strong>RL goes much further from here.</strong> Reinforcement learning alone reaches 61.4. Started from the filtered student, the same RL recipe reaches 91.2, a gain of 29.8 points [25.2, 34.7], for less compute. Some of that comes from having a teacher at all: RL started from plain behavior cloning reaches 81.5 in the one run we have, with the same recipe and step budget, and the filtered start is 10.3 points ahead of it on that seed [6.6, 14.1]. A second behavior-cloning run is finishing now.</p>
 
-<h2>What it costs, and where this goes next</h2>
+<!-- PLACEHOLDER A183 (RL started from unfiltered takeovers). Do not fill in until the ledger has the reading. Keep exactly one of the two versions.
+VERSION A (verification still matters once RL follows):
+<p><strong>The filter survives RL.</strong> RL started from a student trained on all takeovers, failures included, ends at XX.X, YY.Y points [LO, HI] below RL started from the filtered student (one seed). RL does not wash out what the student learned from the teacher's failures.</p>
+VERSION B (RL makes up the difference):
+<p><strong>RL can make up for a missing filter.</strong> RL started from a student trained on all takeovers, failures included, ends at XX.X, within YY.Y points [LO, HI] of RL started from the filtered student (one seed). When RL follows, the reward does the filtering that the data did not.</p>
+-->
 
-<p>One cost should be stated plainly. Fine-tuning a small model on agent data damages what it could do before. Averaged over four general benchmarks (GSM8K, MATH-500, IFEval and MMLU-Redux), the base student scores 75.4, and the student trained on verified takeovers scores 21.3. Mixing the model's own earlier answers back into training as replay data recovers 64.0 without giving up any ALFWorld success. Training with LoRA plus replay recovers 72.8, close to the original, but gives up about 4.5 points on the task. We do not yet have a version that keeps both.</p>
+<p>For readers who want to place these numbers next to published ones, here are the same models under the evaluation protocol of <a href="https://arxiv.org/abs/2609.40285">PivotOPD</a>, which is stricter than ours: unseen tasks only, a 30-step cap, and an average over the six task types.</p>
 
-<p>This is ongoing work, and the picture so far comes from two environments, one student, and one family of models. In progress now: more training runs behind every number, including the behavior-cloning-then-RL baseline; a study of how the advantage in WebShop changes as the amount of data grows; a full accounting of what each method costs in compute; and a test of whether the filter still matters once RL follows.</p>
+<div class="tbl-wrap">
+<table class="data">
+  <tr><th>ALFWorld, PivotOPD protocol</th><th class="n">Success</th><th class="n">Seeds</th></tr>
+  <tr><td>Vanilla on-policy distillation</td><td class="n">18.9</td><td class="n">3</td></tr>
+  <tr><td>Behavior cloning</td><td class="n">44.9</td><td class="n">3</td></tr>
+  <tr><td>RL alone</td><td class="n">53.0</td><td class="n">3</td></tr>
+  <tr><td>Verified takeovers at uncovered states</td><td class="n">56.2</td><td class="n">3</td></tr>
+  <tr><td>Behavior cloning, then RL</td><td class="n">70.5</td><td class="n">1</td></tr>
+  <tr class="hi"><td>Verified takeovers, then RL</td><td class="n">85.9</td><td class="n">3</td></tr>
+</table>
+</div>
+<p style="font-family:var(--sans);font-size:13px;color:var(--ink-3);margin-top:-14px">For orientation only: the PivotOPD paper reports 42.7 for GRPO, 51.9 for TCOD and 73.7 for PivotOPD with the same student. Its teacher and prompts differ from ours, so the two sets of numbers are not directly comparable.</p>
 
-<p>The idea we would keep, whatever the later numbers say, is the change of question. When a student cannot be taught somewhere, it is tempting to ask what is wrong with the student, or with the state. Ask first whether the teacher could do it.</p>
+<h2>Where it stops: WebShop</h2>
+
+<p>WebShop is the short-horizon environment, and the plain outcome there is that the recipe has no real advantage. The filter still matters inside the takeovers, by about 20 points, as shown above. But once the filtered student is compared with other ways of spending the same effort, the gap closes.</p>
+
+<p><strong>Against behavior cloning, it is a tie.</strong> We grew all three kinds of data, up to eight times the original collection, and trained each to convergence.</p>
+
+<figure>
+  <div class="card">
+    <h4>WebShop success as the training data grows</h4>
+    <p class="sub">Percent of 500 test instructions solved, against number of training examples (log scale)</p>
+    <div class="legend"><span><i style="background:var(--accent)"></i>Verified takeovers, all states</span><span><i style="background:var(--warn)"></i>Verified takeovers, uncovered states</span><span><i style="background:var(--ink-3)"></i>Behavior cloning</span></div>
+    <div id="chart-scale"></div>
+  </div>
+  <figcaption>Three seeds per point, each trained to convergence with the checkpoint chosen on held-out validation tasks, which is why these scores are higher than in the earlier WebShop chart. One larger behavior-cloning point is still training.</figcaption>
+</figure>
+
+<p>Verified takeovers from all states are worth the same per example as teacher demonstrations at every size we tried: &minus;1.3 [&minus;4.5, +1.6] at 381 examples, +0.4 [&minus;2.8, +3.6] at 820, and +2.4 [&minus;0.3, +5.1] at 3,682, where they reach 59.7 against 57.3. Takeovers from uncovered states are ahead only while data is scarce: +7.6 [4.6, 10.6] at 259 examples, shrinking steadily and gone by about 2,500 (&minus;0.4 [&minus;3.0, +2.4]). Cost says the same thing: matched on teacher tokens the two approaches are equal, and matched on GPU hours behavior cloning is at least as cheap. Retrying the teacher at states where it had failed did not help either.</p>
+
+<p><strong>Against RL, it is a small edge.</strong> RL started from the filtered student ends at 71.1, against 68.4 for RL alone: +2.7 [+0.2, +5.1] over three seeds, below the 3-point margin we had set in advance for calling it a win. The filtered start does get there faster. In the one seed where we compared them at a quarter of RL's compute, it stood at 61.3 against 11.2.</p>
+
+<p><strong>Why the difference?</strong> We think it comes back to the teacher. In WebShop the 32B model is a very weak player on its own: it solves 3.8% of instructions in the mode it teaches in, and 6.1% with reasoning switched on. RL, with nothing but the reward, reaches about 70. A teacher that can barely do the task has little to pass on that reward does not find, and in episodes this short reward finds it quickly. ALFWorld is the opposite case: the teacher knows things that RL alone struggles to discover in a long episode.</p>
+
+<p class="pull">In the long-horizon environment, takeovers beat demonstrations example for example. In the short one, they are equal.</p>
+
+<h2>A cost that is not ours alone</h2>
+
+<p>Fine-tuning a small model on agent data damages what it could do before. We measure that with the average of four general benchmarks (GSM8K, MATH-500, IFEval and MMLU-Redux), on which the untouched student scores 75.4. The student trained on verified takeovers falls to 21.3 in ALFWorld. That looked at first like a price of our recipe. It is a price of agent fine-tuning in general: behavior cloning and RL pay it too.</p>
+
+<div class="tbl-wrap">
+<table class="data">
+  <tr><th>General-ability average after training (base model: 75.4)</th><th class="n">ALFWorld</th><th class="n">WebShop</th><th class="n">TextCraft</th></tr>
+  <tr><td>Verified takeovers</td><td class="n">21.3</td><td class="n">22.4</td><td class="n">34.7</td></tr>
+  <tr><td>Behavior cloning</td><td class="n">36.1</td><td class="n">18.2</td><td class="n">19.0</td></tr>
+  <tr><td>RL, after a short format warm-up</td><td class="n">54.1</td><td class="n">10.1</td><td class="n">60.4</td></tr>
+  <tr class="hi"><td>Verified takeovers with replay</td><td class="n">64.0</td><td class="n">67.1</td><td class="n">70.0</td></tr>
+  <!-- PLACEHOLDER (A135 after RL): one extra row group for RL alone, verified takeovers then RL, and behavior cloning then RL at their final checkpoints. Do not fill in until the ledger has the reading.
+  <tr><td>RL alone, final checkpoint</td><td class="n">XX.X</td><td class="n"></td><td class="n"></td></tr>
+  <tr><td>Verified takeovers, then RL</td><td class="n">XX.X</td><td class="n"></td><td class="n"></td></tr>
+  <tr><td>Behavior cloning, then RL</td><td class="n">XX.X</td><td class="n"></td><td class="n"></td></tr>
+  -->
+</table>
+</div>
+<p style="font-family:var(--sans);font-size:13px;color:var(--ink-3);margin-top:-14px">Every cell is a single seed. TextCraft is a third environment we use only for this check. Training budgets differ between rows, so read the table for the pattern, not for a ranking. RL from the base model with no warm-up, measured at an early ALFWorld checkpoint, kept 74.5.</p>
+
+<p>The fix that works is replay: mixing the model's own earlier answers back into the training data. With replay, the student stays between 64 and 70 in all three environments, and in ALFWorld it gives up nothing on the task (64.0 against 64.5, three seeds).</p>
+
+<h2>Still running</h2>
+
+<p>This is ongoing work on two environments, one student and one family of models. The WebShop seeds are now complete. Still to come: the second behavior-cloning-then-RL run in ALFWorld, RL started from unfiltered takeovers (which will say whether the filter still matters once RL follows), the last behavior-cloning point on the WebShop curve, and the general-ability check after RL.</p>
+
+<p>The idea we would keep, whatever those numbers say, is the change of question. When a student cannot be taught somewhere, it is tempting to ask what is wrong with the student, or with the state. Ask first whether the teacher could do it. In ALFWorld the answer was "one time in eight", and keeping that eighth was enough. In WebShop the answer was "hardly at all", and no amount of filtering makes a teacher out of that.</p>
 
 </article>
 </main>
@@ -466,6 +542,49 @@ footer a { color: var(--ink-2); }
     { x: 21.3, y: 12.1, lo: 8.8, hi: 15.6, name: '32B', full: 'Qwen3-32B, to the end', dx: 10, dy: -4 },
     { x: 60.7, y: 3.8, lo: 2.0, hi: 5.8, name: '32B + expert plan', full: 'Qwen3-32B with the expert plan, to the end', dx: 14, dy: -20, anchor: 'end' }
   ], 'Gain from verification against teacher takeover success, uncovered states only');
+
+  // WebShop data scaling (A179): success against number of training examples.
+  (function () {
+    var series = [
+      { name: 'Behavior cloning', color: 'var(--ink-3)', lab: { i: 11, dx: 10, dy: 16, anchor: 'start' },
+        pts: [[259, 44.7], [381, 48.7], [453, 47.4], [555, 47.8], [673, 49.9], [820, 52.3], [1183, 50.6], [1441, 57.4], [1664, 54.6], [2483, 57.3], [3301, 57.9], [3682, 57.3]] },
+        // PLACEHOLDER: add [5726, XX.X] to the behavior-cloning series once the ledger has the reading.
+      { name: 'Verified takeovers, uncovered states', color: 'var(--warn)', lab: { i: 0, dx: -6, dy: -12, anchor: 'start', text: 'Verified, uncovered states' },
+        pts: [[259, 52.3], [555, 52.9], [1183, 53.8], [2483, 56.9]] },
+      { name: 'Verified takeovers, all states', color: 'var(--accent)', lab: { i: 3, dx: 8, dy: -10, anchor: 'end', text: 'Verified, all states' },
+        pts: [[381, 47.3], [820, 52.7], [1668, 55.5], [3682, 59.7]] }
+    ];
+    var W = 680, H = 360, L = 44, R = 16, T = 16, B = 46, x0 = Math.log(220), x1 = Math.log(7000), y0 = 40, y1 = 62;
+    var pw = W - L - R, ph = H - T - B;
+    function X(v) { return L + pw * (Math.log(v) - x0) / (x1 - x0); }
+    function Y(v) { return T + ph * (1 - (v - y0) / (y1 - y0)); }
+    var svg = el('svg', { viewBox: '0 0 ' + W + ' ' + H, role: 'img', 'aria-label': 'WebShop success against number of training examples for verified takeovers and behavior cloning' });
+    [40, 45, 50, 55, 60].forEach(function (t) {
+      el('line', { x1: L, x2: W - R, y1: Y(t), y2: Y(t), 'class': t === 40 ? 'axis' : 'grid' }, svg);
+      el('text', { x: L - 7, y: Y(t) + 4, 'text-anchor': 'end', 'font-size': 12 }, svg, t);
+    });
+    [250, 500, 1000, 2000, 4000].forEach(function (t) {
+      el('text', { x: X(t), y: H - B + 18, 'text-anchor': 'middle', 'font-size': 12 }, svg, t.toLocaleString('en-US'));
+    });
+    el('text', { x: L + pw / 2, y: H - 6, 'text-anchor': 'middle', 'font-size': 12 }, svg, 'Training examples');
+    series.forEach(function (sr) {
+      el('polyline', { points: sr.pts.map(function (p) { return X(p[0]).toFixed(1) + ',' + Y(p[1]).toFixed(1); }).join(' '), 'class': 'sline', style: 'stroke:' + sr.color }, svg);
+    });
+    series.forEach(function (sr) {
+      sr.pts.forEach(function (p) {
+        el('circle', { cx: X(p[0]), cy: Y(p[1]), r: 4.5, 'class': 'sdot', style: 'fill:' + sr.color }, svg);
+      });
+      var lp = sr.pts[sr.lab.i];
+      el('text', { x: X(lp[0]) + sr.lab.dx, y: Y(lp[1]) + sr.lab.dy, 'text-anchor': sr.lab.anchor, 'font-size': 12.5, 'class': 'lab' }, svg, sr.lab.text || sr.name);
+    });
+    series.forEach(function (sr) {
+      sr.pts.forEach(function (p) {
+        var hit = el('circle', { cx: X(p[0]), cy: Y(p[1]), r: 11, 'class': 'hit' }, svg);
+        hover(hit, '<b>' + sr.name + '</b><br>' + p[0].toLocaleString('en-US') + ' examples<br>' + p[1].toFixed(1) + '% success, 3 seeds');
+      });
+    });
+    document.getElementById('chart-scale').appendChild(svg);
+  })();
 })();
 </script>
 </body>

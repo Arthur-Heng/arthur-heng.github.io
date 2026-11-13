@@ -384,6 +384,7 @@ VERSION B (RL makes up the difference):
   <tr><td>Behavior cloning</td><td class="n">36.1</td><td class="n">18.2</td><td class="n">19.0</td></tr>
   <tr><td>RL, after a short format warm-up</td><td class="n">54.1</td><td class="n">10.1</td><td class="n">60.4</td></tr>
   <tr class="hi"><td>Verified takeovers with replay</td><td class="n">64.0</td><td class="n">67.1</td><td class="n">70.0</td></tr>
+  <tr><td>Verified takeovers with LoRA and replay</td><td class="n">72.8</td><td class="n">&ndash;</td><td class="n">&ndash;</td></tr>
   <!-- PLACEHOLDER (A135 after RL): one extra row group for RL alone, verified takeovers then RL, and behavior cloning then RL at their final checkpoints. Do not fill in until the ledger has the reading.
   <tr><td>RL alone, final checkpoint</td><td class="n">XX.X</td><td class="n"></td><td class="n"></td></tr>
   <tr><td>Verified takeovers, then RL</td><td class="n">XX.X</td><td class="n"></td><td class="n"></td></tr>
@@ -393,7 +394,7 @@ VERSION B (RL makes up the difference):
 </div>
 <p style="font-family:var(--sans);font-size:13px;color:var(--ink-3);margin-top:-14px">Every cell is a single seed. TextCraft is a third environment we use only for this check. Training budgets differ between rows, so read the table for the pattern, not for a ranking. RL from the base model with no warm-up, measured at an early ALFWorld checkpoint, kept 74.5.</p>
 
-<p>The fix that works is replay: mixing the model's own earlier answers back into the training data. With replay, the student stays between 64 and 70 in all three environments, and in ALFWorld it gives up nothing on the task (64.0 against 64.5, three seeds).</p>
+<p>The fix that works is replay: mixing the model's own earlier answers back into the training data. With replay, the student stays between 64 and 70 in all three environments, and in ALFWorld it gives up nothing on the task (64.0 against 64.5, three seeds). Training with LoRA on top of replay keeps even more, 72.8 in ALFWorld and close to the untouched model, but gives up about 4.5 points on the task (60.0 against 64.5, three seeds). We do not yet have a version that keeps both.</p>
 
 <h2>Still running</h2>
 
